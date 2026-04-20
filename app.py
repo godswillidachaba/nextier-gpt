@@ -1,6 +1,6 @@
 import os
 import streamlit as st
-from dotenv import load_dotenv
+# from dotenv import load_dotenv
 from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
@@ -9,8 +9,8 @@ from langchain_classic.chains.combine_documents import create_stuff_documents_ch
 from langchain_core.prompts import ChatPromptTemplate
 
 # Load Environment Variables
-load_dotenv()
-OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+# load_dotenv()
+OPENAI_API_KEY = st.secrets["OPENAI_API_KEY"]     // os.getenv("OPENAI_API_KEY")
 
 # Initialize Streamlit Page
 st.set_page_config(
