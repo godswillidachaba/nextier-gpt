@@ -5,16 +5,12 @@ from langchain_community.vectorstores import FAISS
 from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_openai import ChatOpenAI
 from langchain_classic.chains import create_retrieval_chain
-
-from langchain_classic.chains.combine_documents import (
-    create_stuff_documents_chain,
-)
-
+from langchain_classic.chains.combine_documents import create_stuff_documents_chain
 from langchain_core.prompts import ChatPromptTemplate
 
 # Load Environment Variables
 load_dotenv()
-OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
 
 # Initialize Streamlit Page
 st.set_page_config(
@@ -46,21 +42,13 @@ st.markdown("Hi, I’m your helpful assistant here to tell you all about Nextier
 
 # Sidebar Configuration
 with st.sidebar:
-    # st.image("https://img.icons8.com/clouds/100/000000/brain-main.png", width=100)
     st.header("⚙️ Configuration")
     
     model_name = st.selectbox(
         "LLM Model",
-        [
-            "nvidia/nemotron-3-super-120b-a12b:free",
-            "meta-llama/llama-3.3-70b-instruct:free"
-            # "z-ai/glm-4.5-air:free",
-            # "openai/gpt-oss-120b:free",
-            # "google/gemma-4-31b-it:free",
-            # "nvidia/llama-nemotron-embed-vl-1b-v2:free"
-        ],
-        index=0,
-        help="Select the model to be used by OpenRouter."
+        ["gpt-4o", "gpt-4o-mini", "o1-mini"],
+        index=1,
+        help="Select the OpenAI model to analyze the company data."
     )
     
     top_k = st.slider(
@@ -73,11 +61,11 @@ with st.sidebar:
     
     st.divider()
     
-    if not OPENROUTER_API_KEY:
-        st.info("Key not found in environment variables. Please enter it below.")
-        OPENROUTER_API_KEY = st.text_input("OpenRouter API Key", type="password")
+    if not OPENAI_API_KEY:
+        st.info("API Key not found in environment. Please enter it below.")
+        OPENAI_API_KEY = st.text_input("OpenAI API Key", type="password")
     else:
-        st.success("API Key loaded from environment.")
+        st.success("OpenAI API Key loaded.")
 
     if st.button("🗑️ Clear Chat History"):
         st.session_state.messages = []
@@ -105,25 +93,19 @@ def init_resources():
         st.error("❌ FAISS index not found! Please run the indexing script first.")
         return None
 
-# Check for API Key
-if not OPENROUTER_API_KEY:
-    st.warning("⚠️ Please provide an OpenRouter API key in the sidebar to start chatting.")
-    st.stop()
-
 # Load Vector Store
 vectorstore = init_resources()
 if vectorstore is None:
     st.stop()
 
 # Initialize LLM
+if not OPENAI_API_KEY:
+    st.warning("⚠️ Please provide an OpenAI API key in the sidebar to start chatting.")
+    st.stop()
+
 llm = ChatOpenAI(
-    openai_api_key=OPENROUTER_API_KEY,
-    base_url="https://openrouter.ai/api/v1",
+    api_key=OPENAI_API_KEY,
     model_name=model_name,
-    default_headers={
-        "HTTP-Referer": "http://localhost:8501", # Default Streamlit port
-        "X-Title": "Nextier RAG Explorer",
-    },
     streaming=True
 )
 
@@ -193,4 +175,4 @@ if prompt := st.chat_input("Ask a question about Nextier..."):
                 st.session_state.messages.append({"role": "assistant", "content": answer})
                 
             except Exception as e:
-                st.error(f"Error communicating with OpenRouter: {str(e)}")
+                st.error(f"Error communicating with OpenAI: {str(e)}")
