@@ -14,7 +14,7 @@ from langchain_core.prompts import ChatPromptTemplate
 
 # Load Environment Variables
 load_dotenv()
-OPENROUTER_API_KEY = "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"
+OPENROUTER_API_KEY = st.secrets["OPENROUTER_API_KEY"]
 
 # Initialize Streamlit Page
 st.set_page_config(
