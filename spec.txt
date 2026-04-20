@@ -1,0 +1,80 @@
+Create a **Streamlit application in `main.py`** that connects to the `faiss_index` and enables querying of company profile data ingested from PDF documents. The app should be configured to use **OpenRouter** as the LLM provider for handling user queries and generating responses.
+
+### Expected Flow / Steps the Agent Should Follow
+
+1. **Initialize the Streamlit App**
+
+   * Set up the UI with a title, short description, and a text input (or chat-style interface).
+   * Optionally add a sidebar for configuration (API key, model choice).
+
+2. **Load Environment Variables**
+
+   * Retrieve the OpenRouter API key from environment variables (`OPENROUTER_API_KEY`).
+   * Validate that the key exists before proceeding.
+
+3. **Initialize OpenRouter Client**
+
+   * Configure the base URL (`https://openrouter.ai/api/v1`).
+   * Set headers (Authorization with Bearer token).
+   * Choose a model (e.g., `openai/gpt-4o`, `mistral`, etc.).
+
+4. **Load the FAISS Index (`faiss_index`)**
+
+   * Load the precomputed FAISS index from disk.
+   * Load the corresponding embeddings model used during indexing.
+   * Ensure the index is ready for similarity search.
+
+5. **Accept User Query**
+
+   * Capture the user’s input from the Streamlit text box or chat input.
+   * Prevent empty submissions.
+
+6. **Embed the Query**
+
+   * Convert the user query into an embedding using the same embeddings model used for the FAISS index.
+
+7. **Perform Similarity Search**
+
+   * Query the `faiss_index` using the query embedding.
+   * Retrieve top-k most relevant document chunks (e.g., 3–5).
+
+8. **Assemble Context**
+
+   * Combine retrieved chunks into a single context block.
+   * Optionally include metadata like company name or document section.
+
+9. **Construct Prompt**
+
+   * Create a prompt that includes:
+
+     * The retrieved context
+     * The user’s question
+     * Instructions to only answer from the context
+
+10. **Query OpenRouter**
+
+* Send the prompt to OpenRouter’s chat/completions endpoint.
+* Receive the generated response from the selected model.
+
+11. **Display Results in Streamlit**
+
+* Show the answer clearly in the UI.
+* Optionally display source snippets used to generate the answer.
+
+12. **Error Handling**
+
+* Handle cases like:
+
+  * Missing FAISS index
+  * No relevant search results
+  * API errors from OpenRouter
+
+13. **Optional Enhancements**
+
+* Add chat history (session state).
+* Add a loading spinner (`st.spinner`).
+* Allow PDF uploads and re-indexing.
+* Add controls for `top_k` or model selection.
+
+This ensures a proper **RAG (Retrieval-Augmented Generation)** pipeline using FAISS:
+**User Query → Embedding → FAISS Search → Context → OpenRouter → Response**
